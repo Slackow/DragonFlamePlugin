@@ -32,7 +32,7 @@ public class Main extends JavaPlugin implements Listener {
     @EventHandler
     public void onDeath(PlayerDeathEvent e){
         Player p = e.getEntity();
-        getData(p).logback(p);
+        MyPlayerData.logback(p);
     }
 
     @SuppressWarnings("deprecation")
