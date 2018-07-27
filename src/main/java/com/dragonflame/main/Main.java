@@ -235,11 +235,21 @@ public class Main extends JavaPlugin implements Listener {
                 return true;
             case "fly":
                 if (p.hasPermission("dragonflame.fly")) {
-                    p.setAllowFlight(!p.getAllowFlight());
-                    if (p.getAllowFlight())
-                        p.sendMessage(GOLD + "Flight is Enabled!");
-                    else
-                        p.sendMessage(GOLD + "Flight is Disabled!");
+                    if (!p.hasPermission("dragonflame.flyothers")&& args.length != 1) {
+                        p.setAllowFlight(!p.getAllowFlight());
+                        if (p.getAllowFlight())
+                            p.sendMessage(GOLD + "Flight is Enabled!");
+                        else
+                            p.sendMessage(GOLD + "Flight is Disabled!");
+                    }
+                        else {
+                            Player target = getPlayer(args[0]);
+                            target.setAllowFlight(!target.getAllowFlight());
+                            if (target.getAllowFlight())
+                                target.sendMessage(GOLD + "Flight is Enabled!");
+                            else
+                                target.sendMessage(GOLD + "Flight is Disabled!");
+                    }
                 }
                 return true;
             case "echest":
@@ -251,11 +261,22 @@ public class Main extends JavaPlugin implements Listener {
                        p.getInventory().getItemInMainHand().setDurability((short) 0);
                 return true;
             case "feed":
-                if (p.hasPermission("dragonflame.food")) {
+                if (p.hasPermission("dragonflame.feed")) {
                     p.setFoodLevel(20);
                     p.setSaturation(20);
                 }
                 return true;
+            case "invsee":
+                if (p.hasPermission("dragonflame.invsee")) {
+                    if (args.length != 1)
+                        return false;
+                    Player target = getPlayer(args[0]);
+                    if (Bukkit.getOnlinePlayers().contains(target))
+                        p.openInventory(target.getInventory());
+                    else
+                        p.sendMessage(RED + "Invalid Player!");
+                    return true;
+                }
         }
         return false;
     }

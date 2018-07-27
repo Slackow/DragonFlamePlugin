@@ -70,6 +70,10 @@ commands:
     usage: /<command>
     description: Restores all food.
     permission: dragonflame.feed
+  invsee:
+    usage: /<command> [name]
+    description: Opens a player inventory.
+    permission: dragonflame.invsee
 permissions:
  dragonflame.old:
   default: true
@@ -91,9 +95,13 @@ permissions:
   default: op
  dragonflame.fly:
   default: op
+ dragonflame.flyothers:
+  default: op
  dragonflame.echest:
   default: op
  dragonflame.repair:
   default: op
  dragonflame.feed:
+  default: op
+ dragonflame.invsee:
   default: op
