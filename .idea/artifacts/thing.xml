@@ -3,7 +3,6 @@
     <output-path>$PROJECT_DIR$/../../Server/plugins</output-path>
     <root id="archive" name="thing.jar">
       <element id="module-output" name="DragonFlamePlugin" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Libraries/craftbukkit-1.13.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>
