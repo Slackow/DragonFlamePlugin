@@ -5,6 +5,7 @@ import com.google.gson.JsonParser;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -32,7 +33,7 @@ public class Main extends JavaPlugin implements Listener {
     static Map<UUID, MyPlayerData> dataMap = new LinkedHashMap<>();
 
     @EventHandler
-    public void onDeath(PlayerDeathEvent e){
+    public void onDeath(PlayerDeathEvent e) {
         Player p = e.getEntity();
         MyPlayerData.logback(p);
     }
@@ -44,7 +45,7 @@ public class Main extends JavaPlugin implements Listener {
 
         File file = new File("player.json");
         dataJson = new JsonObject();
-        if(file.exists()) {
+        if (file.exists()) {
             try {
                 dataJson = new JsonParser().parse(new FileReader(file)).getAsJsonObject();
             } catch (FileNotFoundException e) {
@@ -53,19 +54,19 @@ public class Main extends JavaPlugin implements Listener {
         }
 
 
-        for (Player p : Bukkit.getOnlinePlayers()){
+        for (Player p : Bukkit.getOnlinePlayers()) {
             storeData(p.getUniqueId());
         }
     }
 
     @EventHandler
-    public void onJoin(PlayerJoinEvent e){
+    public void onJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
         storeData(p.getUniqueId());
     }
 
-    private void storeData(UUID uuid){
-        if(dataJson.has(uuid.toString())){
+    private void storeData(UUID uuid) {
+        if (dataJson.has(uuid.toString())) {
             dataMap.computeIfAbsent(uuid, k -> MyPlayerData.deserData(dataJson.getAsJsonObject(uuid.toString())));
         } else {
             dataMap.computeIfAbsent(uuid, k -> new MyPlayerData());
@@ -77,8 +78,7 @@ public class Main extends JavaPlugin implements Listener {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
-        if (!(sender instanceof Player))
-        {
+        if (!(sender instanceof Player)) {
             return false;
         }
         Player p = (Player) sender;
@@ -86,11 +86,11 @@ public class Main extends JavaPlugin implements Listener {
 
         String namespace = "MechTech:";
 
-        if(label.startsWith(namespace)){
+        if (label.startsWith(namespace)) {
             label = label.substring(namespace.length());
         }
 
-        switch (label){
+        switch (label) {
             case "tpa":
                 if (args.length != 1)
                     return false;
@@ -118,7 +118,7 @@ public class Main extends JavaPlugin implements Listener {
                 MyPlayerData.logbackAndTP(p, loc);
                 return true;
             case "tpdeny":
-                if(args.length != 0)
+                if (args.length != 0)
                     return false;
                 data = getData(p);
                 if (data.getTprequest() == null)
@@ -131,7 +131,7 @@ public class Main extends JavaPlugin implements Listener {
                 Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
                 String[] strings = new String[onlinePlayers.size()];
                 int x = 0;
-                for(Player player : onlinePlayers){
+                for (Player player : onlinePlayers) {
                     strings[x++] = "<" + player.getName() + "> f";
                 }
                 onlinePlayers.forEach(player -> player.sendMessage(strings));
@@ -141,7 +141,7 @@ public class Main extends JavaPlugin implements Listener {
                 return true;
             case "home":
                 data = getData(p);
-                switch (args.length){
+                switch (args.length) {
                     case 0:
                         data.home(p, null);
                         break;
@@ -149,10 +149,10 @@ public class Main extends JavaPlugin implements Listener {
                         data.home(p, args[0]);
                         break;
                     case 2:
-                        if(p.hasPermission("dragonflame.home.op")){
+                        if (p.hasPermission("dragonflame.home.op")) {
                             OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[0]);
                             UUID uuid = offlinePlayer.getUniqueId();
-                            if(dataJson.has(uuid.toString()) && !dataMap.containsKey(uuid))
+                            if (dataJson.has(uuid.toString()) && !dataMap.containsKey(uuid))
                                 storeData(uuid);
                             dataMap.get(uuid).home(p, args[1]);
                             break;
@@ -164,7 +164,7 @@ public class Main extends JavaPlugin implements Listener {
                 return true;
             case "sethome":
                 data = getData(p);
-                switch(args.length){
+                switch (args.length) {
                     case 0:
                         data.setHome(p, null);
                         break;
@@ -172,9 +172,9 @@ public class Main extends JavaPlugin implements Listener {
                         data.setHome(p, args[0]);
                         break;
                     case 6:
-                        if(p.hasPermission("dragonflame.home.op")){
+                        if (p.hasPermission("dragonflame.home.op")) {
                             OfflinePlayer playerTargeted = Bukkit.getOfflinePlayer(args[0]);
-                            if(!dataJson.has(playerTargeted.getUniqueId().toString())){
+                            if (!dataJson.has(playerTargeted.getUniqueId().toString())) {
                                 storeData(playerTargeted.getUniqueId());
                             }
                             Location loca = new Location(
@@ -193,7 +193,7 @@ public class Main extends JavaPlugin implements Listener {
                 return true;
             case "delhome":
                 data = getData(p);
-                switch (args.length){
+                switch (args.length) {
                     case 0:
                         data.delHome(p, null);
                         break;
@@ -215,35 +215,50 @@ public class Main extends JavaPlugin implements Listener {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), getTemp(p.getName(), args));
                 ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
                 Scoreboard scoreboard = scoreboardManager.getMainScoreboard();
-                Objective objective = scoreboard.getObjective("home1x");
-                for(OfflinePlayer offlinePlayer : Bukkit.getOfflinePlayers()){
-                    p.sendMessage("" + objective.getScore(offlinePlayer).getScore());
+                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[0]);
+                storeData(offlinePlayer.getUniqueId());
+                for (int i = 1; i <= 3; i++) {
+                    Objective ox = scoreboard.getObjective("home" + i + "x");
+                    Objective oy = scoreboard.getObjective("home" + i + "y");
+                    Objective oz = scoreboard.getObjective("home" + i + "z");
+                    Objective od = scoreboard.getObjective("home" + i + "d");
+                    int ix = ox.getScore(offlinePlayer).getScore();
+                    int iy = oy.getScore(offlinePlayer).getScore();
+                    int iz = oz.getScore(offlinePlayer).getScore();
+                    int id = od.getScore(offlinePlayer).getScore();
+                    MyPlayerData myPlayerData = dataMap.get(offlinePlayer.getUniqueId());
+                    if(ix == 0 && iy == 0 && iz == 0)
+                        continue;
+                    myPlayerData.setHome(p, "" + i, new Location(worlds[id + 1], ix, iy, iz));
                 }
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "scoreboard players reset " + args[0] + " home1d");
                 return true;
         }
 
         return false;
     }
 
-    private static String getTemp(String player, String[] args){
+    private static final World[] worlds = {Bukkit.getWorld("world_nether"), Bukkit.getWorld("world"), Bukkit.getWorld("world_the_end")};
+
+    private static String getTemp(String player, String[] args) {
         StringBuilder sb = new StringBuilder()
                 .append("tellraw ")
                 .append(player)
                 .append(" [\"")
                 .append(args[0])
                 .append("'s homes:\"");
-        for (int i = 1;i <= 3;i++){
+        for (int i = 1; i <= 3; i++) {
             sb.append(",\"\\nHome ");
             sb.append(i);
             sb.append(": \"");
-            for (char chr : new char[]{'x', 'y', 'z', 'd'}){
+            for (char chr : new char[]{'x', 'y', 'z', 'd'}) {
                 sb.append(",{\"score\":{\"objective\":\"home");
                 sb.append(i);
                 sb.append(chr);
                 sb.append("\",\"name\":\"");
                 sb.append(args[0]);
                 sb.append("\"}}");
-                if(chr != 'd')
+                if (chr != 'd')
                     sb.append(",\", \"");
             }
         }
@@ -252,18 +267,16 @@ public class Main extends JavaPlugin implements Listener {
     }
 
 
-
-    private MyPlayerData getData(Player p){
+    private MyPlayerData getData(Player p) {
         return dataMap.get(p.getUniqueId());
     }
-
 
 
     @Override
     public void onDisable() {
         try {
             FileWriter fileWriter = new FileWriter("player.json");
-            JsonObject json = new JsonObject();
+            JsonObject json = dataJson;
             dataMap.forEach((uuid, myPlayerData) -> json.add(uuid.toString(), MyPlayerData.serData(myPlayerData)));
             fileWriter.write(json.toString());
             fileWriter.close();

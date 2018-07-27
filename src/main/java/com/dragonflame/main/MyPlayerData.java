@@ -88,7 +88,7 @@ class MyPlayerData {
             return;
         }
         p.sendMessage("Homes:");
-        homes.forEach((str, location) -> p.sendMessage("-\"" + str + "(" + round(location.getX(), 2) + ", " + round(location.getY(), 2) + ", " + round(location.getZ(), 2)  + ") \" Dimension: " + location.getWorld().getName()));
+        homes.forEach((str, location) -> p.sendMessage("-\"" + str + "\" (" + round(location.getX(), 2) + ", " + round(location.getY(), 2) + ", " + round(location.getZ(), 2)  + ") Dimension: " + location.getWorld().getName()));
     }
 
     private static double round(double i, int places){
@@ -174,5 +174,9 @@ class MyPlayerData {
 
     void setTprequest(UUID tprequest) {
         this.tprequest = tprequest;
+    }
+
+    public Map<String, Location> getHomes() {
+        return homes;
     }
 }
