@@ -221,6 +221,7 @@ public class Main extends JavaPlugin implements Listener {
                 for(OfflinePlayer offlinePlayer : Bukkit.getOfflinePlayers()){
                     p.sendMessage("" + objective.getScore(offlinePlayer).getScore());
                 }
+<<<<<<< HEAD
                 return true;
             case "fly":
                 if (p.hasPermission("dragonflame.fly")) {
@@ -244,6 +245,8 @@ public class Main extends JavaPlugin implements Listener {
                     p.setFoodLevel(20);
                     p.setSaturation(20);
                 }
+=======
+>>>>>>> b6d21e96485fae126346ed5868e75d1df888d7bb
                 return true;
         }
         return false;
