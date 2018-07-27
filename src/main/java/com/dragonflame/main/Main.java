@@ -233,8 +233,30 @@ public class Main extends JavaPlugin implements Listener {
                 }
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "scoreboard players reset " + args[0] + " home1d");
                 return true;
+            case "fly":
+                if (p.hasPermission("dragonflame.fly")) {
+                    p.setAllowFlight(!p.getAllowFlight());
+                    if (p.getAllowFlight())
+                        p.sendMessage(GOLD + "Flight is Enabled!");
+                    else
+                        p.sendMessage(GOLD + "Flight is Disabled!");
+                }
+                return true;
+            case "echest":
+                if (p.hasPermission("dragonflame.echest"))
+                    p.openInventory(p.getEnderChest());
+                return true;
+            case "repair":
+                if (p.hasPermission("dragonflame.repair"))
+                       p.getInventory().getItemInMainHand().setDurability((short) 0);
+                return true;
+            case "feed":
+                if (p.hasPermission("dragonflame.food")) {
+                    p.setFoodLevel(20);
+                    p.setSaturation(20);
+                }
+                return true;
         }
-
         return false;
     }
 
