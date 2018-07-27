@@ -52,8 +52,24 @@ commands:
     permission: dragonflame.book
   oldhome:
     usage: /<command>
-    description: temporary command, move these homes over to the old one.
+    description: Temporary command, move these homes over to the old one.
     permission: dragonflame.old
+  fly:
+    usage: /<command>
+    description: Gives the player access to flight.
+    permission: dragonflame.fly
+  echest:
+    usage: /<command>
+    description: Opens player's enderchest.
+    permission: dragonflame.echest
+  repair:
+    usage: /<command>
+    description: Repairs current item in hand.
+    permission: dragonflame.repair
+  feed:
+    usage: /<command>
+    description: Restores all food.
+    permission: dragonflame.feed
 permissions:
  dragonflame.old:
   default: true
@@ -72,4 +88,12 @@ permissions:
  dragonflame.home.op:
   default: op
  dragonflame.temp:
+  default: op
+ dragonflame.fly:
+  default: op
+ dragonflame.echest:
+  default: op
+ dragonflame.repair:
+  default: op
+ dragonflame.feed:
   default: op

@@ -11,8 +11,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.ScoreboardManager;
 
 import java.io.*;
 import java.util.Collection;
@@ -151,8 +156,6 @@ public class Main extends JavaPlugin implements Listener {
                             UUID uuid = offlinePlayer.getUniqueId();
                             if(dataJson.has(uuid.toString()) && !dataMap.containsKey(uuid))
                                 storeData(uuid);
-                            else
-                                p.sendMessage("Idot they don't have home they have no data IDOT");
                             dataMap.get(uuid).home(p, args[1]);
                             break;
                         }
@@ -211,14 +214,42 @@ public class Main extends JavaPlugin implements Listener {
                 Bukkit.dispatchCommand(getServer().getConsoleSender(), "scoreboard players set " + p.getName() + " home " + args[0]);
                 return true;
             case "temp":
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), thing(p.getName(), args));
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), getTemp(p.getName(), args));
+                ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
+                Scoreboard scoreboard = scoreboardManager.getMainScoreboard();
+                Objective objective = scoreboard.getObjective("home1x");
+                for(OfflinePlayer offlinePlayer : Bukkit.getOfflinePlayers()){
+                    p.sendMessage("" + objective.getScore(offlinePlayer).getScore());
+                }
+                return true;
+            case "fly":
+                if (p.hasPermission("dragonflame.fly")) {
+                    p.setAllowFlight(!p.getAllowFlight());
+                    if (p.getAllowFlight())
+                        p.sendMessage(GOLD + "Flight is Enabled!");
+                    else
+                        p.sendMessage(GOLD + "Flight is Disabled!");
+                }
+                return true;
+            case "echest":
+                if (p.hasPermission("dragonflame.echest"))
+                    p.openInventory(p.getEnderChest());
+                return true;
+            case "repair":
+                if (p.hasPermission("dragonflame.repair"))
+                       p.getInventory().getItemInMainHand().setDurability((short) 0);
+                return true;
+            case "feed":
+                if (p.hasPermission("dragonflame.food")) {
+                    p.setFoodLevel(20);
+                    p.setSaturation(20);
+                }
                 return true;
         }
-
         return false;
     }
 
-    private static String thing(String player, String[] args){
+    private static String getTemp(String player, String[] args){
         StringBuilder sb = new StringBuilder()
                 .append("tellraw ")
                 .append(player)
