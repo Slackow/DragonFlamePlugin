@@ -2,6 +2,7 @@ package com.dragonflame.main;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.minecraft.server.v1_13_R1.Item;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -13,6 +14,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
@@ -24,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.bukkit.Bukkit.getOnlinePlayers;
 import static org.bukkit.Bukkit.getPlayer;
 import static org.bukkit.ChatColor.*;
 
@@ -235,26 +238,38 @@ public class Main extends JavaPlugin implements Listener {
                 return true;
             case "fly":
                 if (p.hasPermission("dragonflame.fly")) {
-                    if (!p.hasPermission("dragonflame.flyothers")&& args.length != 1) {
+                    if (args.length != 1) {
                         p.setAllowFlight(!p.getAllowFlight());
                         if (p.getAllowFlight())
                             p.sendMessage(GOLD + "Flight is Enabled!");
                         else
                             p.sendMessage(GOLD + "Flight is Disabled!");
                     }
-                        else {
+                        else if (p.hasPermission("dragonflame.flyothers")){
                             Player target = getPlayer(args[0]);
-                            target.setAllowFlight(!target.getAllowFlight());
-                            if (target.getAllowFlight())
-                                target.sendMessage(GOLD + "Flight is Enabled!");
+                            if (Bukkit.getOnlinePlayers().contains(target)) {
+                                target.setAllowFlight(!target.getAllowFlight());
+                                if (target.getAllowFlight())
+                                    target.sendMessage(GOLD + "Flight is Enabled!");
+                                else
+                                    target.sendMessage(GOLD + "Flight is Disabled!");
+                        }
                             else
-                                target.sendMessage(GOLD + "Flight is Disabled!");
+                                p.sendMessage(RED + "Invalid Player!");
                     }
                 }
                 return true;
             case "echest":
                 if (p.hasPermission("dragonflame.echest"))
-                    p.openInventory(p.getEnderChest());
+                    if (args.length != 1)
+                        p.openInventory(p.getEnderChest());
+                    else if (p.hasPermission("dragonflame.echestothers")) {
+                        Player target = getPlayer(args[0]);
+                        if (Bukkit.getOnlinePlayers().contains(target))
+                            p.openInventory(target.getEnderChest());
+                        else
+                            p.sendMessage(RED + "Invalid Player!");
+                    }
                 return true;
             case "repair":
                 if (p.hasPermission("dragonflame.repair"))
@@ -275,6 +290,15 @@ public class Main extends JavaPlugin implements Listener {
                         p.openInventory(target.getInventory());
                     else
                         p.sendMessage(RED + "Invalid Player!");
+                    return true;
+                }
+            case "hat":
+                if (p.hasPermission("dragonflame.hat")) {
+                    ItemStack item = p.getInventory().getItemInMainHand();
+                    ItemStack swap = p.getInventory().getHelmet();
+                    p.getInventory().setHelmet(item);
+                    p.getInventory().setItemInMainHand(swap);
+                    p.sendMessage(GREEN + "Poof!");
                     return true;
                 }
         }
