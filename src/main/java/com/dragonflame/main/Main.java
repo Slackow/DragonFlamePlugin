@@ -13,19 +13,18 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.ScoreboardManager;
 
 import java.io.*;
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import static org.bukkit.Bukkit.getPlayer;
 import static org.bukkit.ChatColor.*;
 
 public class Main extends JavaPlugin implements Listener {
 
-    private static Objective[] objectives;
     private static JsonObject dataJson;
     static Map<UUID, MyPlayerData> dataMap = new LinkedHashMap<>();
 
@@ -51,13 +50,6 @@ public class Main extends JavaPlugin implements Listener {
         }
 
 
-        ScoreboardManager manager = Bukkit.getScoreboardManager();
-        Scoreboard newScoreboard = manager.getMainScoreboard();
-        objectives = newScoreboard.getObjectives()
-                .stream()
-                .filter(obj -> obj.getName().matches("home[1-3][xyzd]]"))
-                .sorted(Comparator.comparing(Objective::getName)).toArray(Objective[]::new);
-
         for (Player p : Bukkit.getOnlinePlayers()){
             storeData(p.getUniqueId());
         }
@@ -67,8 +59,6 @@ public class Main extends JavaPlugin implements Listener {
     public void onJoin(PlayerJoinEvent e){
         Player p = e.getPlayer();
         storeData(p.getUniqueId());
-        boolean a = Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "scoreboard players get " + p.getName() + " home1x");
-        p.sendMessage("a");
     }
 
     private void storeData(UUID uuid){
@@ -113,7 +103,7 @@ public class Main extends JavaPlugin implements Listener {
                 if (data.getTprequest() == null)
                     p.sendMessage(RED + "No Requests");
                 Player playerWhoRequested = getPlayer(data.getTprequest());
-                getData(playerWhoRequested).logbackAndTP(playerWhoRequested, p.getLocation());
+                MyPlayerData.logbackAndTP(playerWhoRequested, p.getLocation());
                 playerWhoRequested.sendMessage(GREEN + "Request Accepted");
                 p.sendMessage(GREEN + "Request Accepted");
                 data.setTprequest(null);
@@ -122,7 +112,7 @@ public class Main extends JavaPlugin implements Listener {
                 Location loc = Bukkit.getWorld("world").getSpawnLocation();
                 loc.setYaw(-180);
                 loc.setPitch(0);
-                getData(p).logbackAndTP(p, loc);
+                MyPlayerData.logbackAndTP(p, loc);
                 return true;
             case "tpdeny":
                 if(args.length != 0)
