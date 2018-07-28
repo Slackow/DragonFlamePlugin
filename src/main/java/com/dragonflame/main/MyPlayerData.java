@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
+import static java.lang.Math.round;
 import static org.bukkit.ChatColor.GOLD;
 import static org.bukkit.ChatColor.RED;
 
@@ -27,6 +28,7 @@ class MyPlayerData {
         }
         return result;
     }
+
 
     void setHome(Player p, String s){
         setHome(p, s, p.getLocation());
@@ -60,9 +62,9 @@ class MyPlayerData {
         p.sendMessage(
                 GOLD +
                 "Teleported Successfully to ("
-                + Math.round(loc.getX()) + ", " +
-                Math.round(loc.getY()) + ", " +
-                Math.round(loc.getZ()) + ")"
+                + round(loc.getX()) + ", " +
+                round(loc.getY()) + ", " +
+                round(loc.getZ()) + ")"
         );
     }
 
@@ -88,20 +90,14 @@ class MyPlayerData {
             return;
         }
         p.sendMessage("Homes:");
-        homes.forEach((str, location) -> p.sendMessage("-\"" + str + "\" (" + round(location.getX(), 2) + ", " + round(location.getY(), 2) + ", " + round(location.getZ(), 2)  + ") Dimension: " + location.getWorld().getName()));
+        homes.forEach((str, location) -> p.sendMessage(
+                "-\"" + str + "\" (" + round(location.getX()) + ", "
+                        + round(location.getY()) + ", "
+                        + round(location.getZ())  + ") Dimension: "
+                        + location.getWorld().getName()));
     }
 
-    private static double round(double i, int places){
-        double result = i;
-        for (int j = 0; j < places; j++) {
-            result*=10;
-        }
-        result = Math.round(result);
-        for (int j = 0; j < places; j++) {
-            result/=10;
-        }
-        return result;
-    }
+
 
     void delHome(Player p, String s){
         if (!homes.containsKey(s)){
@@ -164,7 +160,7 @@ class MyPlayerData {
         return back;
     }
 
-    private void setBack(Location back) {
+    void setBack(Location back) {
         this.back = back;
     }
 
@@ -176,7 +172,4 @@ class MyPlayerData {
         this.tprequest = tprequest;
     }
 
-    public Map<String, Location> getHomes() {
-        return homes;
-    }
 }

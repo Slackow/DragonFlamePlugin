@@ -78,9 +78,13 @@ commands:
     usage: /<command>
     description: Puts item in main hand on head.
     permission: dragonflame.hat
+  ttp:
+    usage: /<command> <player> [player]
+    description: tps 2 players and stores to their back
+    permission: dragonflame.tp
 permissions:
  dragonflame.old:
-  default: true
+  default: op
  dragonflame.book:
   default: true
  dragonflame.spawn:
@@ -91,6 +95,8 @@ permissions:
   default: true
  dragonflame.home:
   default: true
+ dragonflame.tp:
+  default: op
  dragonflame.f:
   default: op
  dragonflame.home.op:

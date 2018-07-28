@@ -1,8 +1,8 @@
 package com.dragonflame.main;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.server.v1_13_R1.Item;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -24,15 +24,13 @@ import java.io.*;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
-import static org.bukkit.Bukkit.getOnlinePlayers;
-import static org.bukkit.Bukkit.getPlayer;
 import static org.bukkit.ChatColor.*;
 
 public class Main extends JavaPlugin implements Listener {
 
-    private static JsonObject dataJson;
     static Map<UUID, MyPlayerData> dataMap = new LinkedHashMap<>();
 
     @EventHandler
@@ -41,41 +39,16 @@ public class Main extends JavaPlugin implements Listener {
         MyPlayerData.logback(p);
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public void onEnable() {
-        Bukkit.getPluginManager().registerEvents(this, this);
-
-        File file = new File("player.json");
-        dataJson = new JsonObject();
-        if (file.exists()) {
-            try {
-                dataJson = new JsonParser().parse(new FileReader(file)).getAsJsonObject();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-
-
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            storeData(p.getUniqueId());
-        }
-    }
-
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
-        Player p = e.getPlayer();
-        storeData(p.getUniqueId());
+        UUID uuid = e.getPlayer().getUniqueId();
+        putData(uuid);
     }
 
-    private void storeData(UUID uuid) {
-        if (dataJson.has(uuid.toString())) {
-            dataMap.computeIfAbsent(uuid, k -> MyPlayerData.deserData(dataJson.getAsJsonObject(uuid.toString())));
-        } else {
-            dataMap.computeIfAbsent(uuid, k -> new MyPlayerData());
-        }
-
+    private void putData(UUID uuid) {
+        dataMap.put(uuid, fetchData(uuid));
     }
+
 
     @SuppressWarnings("deprecation")
     @Override
@@ -87,20 +60,23 @@ public class Main extends JavaPlugin implements Listener {
         Player p = (Player) sender;
         MyPlayerData data;
 
-        String namespace = "MechTech:";
+        String namespace = "mechtech:";
 
         if (label.startsWith(namespace)) {
             label = label.substring(namespace.length());
         }
-
+        Player target;
         switch (label) {
             case "tpa":
                 if (args.length != 1)
                     return false;
-                Player playerRequested = getPlayer(args[0]);
-                playerRequested.sendMessage(GOLD + "TP request from " + DARK_RED + p.getName() + GOLD + ", say " + GREEN + "/tpaccept" + GOLD + " to accept and " + RED + "/tpdeny" + GOLD + " to deny");
-                getData(playerRequested).setTprequest(p.getUniqueId());
-                p.sendMessage(GOLD + "Request sent to " + DARK_RED + playerRequested.getName());
+                target = getPlayer(args[0]);
+
+                if (target == null)
+                    break;
+                target.sendMessage(GOLD + "TP request from " + DARK_RED + p.getName() + GOLD + ", say " + GREEN + "/tpaccept" + GOLD + " to accept and " + RED + "/tpdeny" + GOLD + " to deny");
+                getData(target).setTprequest(p.getUniqueId());
+                p.sendMessage(GOLD + "Request sent to " + DARK_RED + target.getName());
                 return true;
             case "tpaccept":
                 if (args.length != 0)
@@ -108,7 +84,7 @@ public class Main extends JavaPlugin implements Listener {
                 data = getData(p);
                 if (data.getTprequest() == null)
                     p.sendMessage(RED + "No Requests");
-                Player playerWhoRequested = getPlayer(data.getTprequest());
+                Player playerWhoRequested = Bukkit.getPlayer(data.getTprequest());
                 MyPlayerData.logbackAndTP(playerWhoRequested, p.getLocation());
                 playerWhoRequested.sendMessage(GREEN + "Request Accepted");
                 p.sendMessage(GREEN + "Request Accepted");
@@ -126,7 +102,7 @@ public class Main extends JavaPlugin implements Listener {
                 data = getData(p);
                 if (data.getTprequest() == null)
                     p.sendMessage("No Requests");
-                getPlayer(data.getTprequest()).sendMessage(RED + "Request Denied");
+                Bukkit.getPlayer(data.getTprequest()).sendMessage(RED + "Request Denied");
                 p.sendMessage(RED + "Request Denied");
                 data.setTprequest(null);
                 return true;
@@ -155,8 +131,7 @@ public class Main extends JavaPlugin implements Listener {
                         if (p.hasPermission("dragonflame.home.op")) {
                             OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[0]);
                             UUID uuid = offlinePlayer.getUniqueId();
-                            if (dataJson.has(uuid.toString()) && !dataMap.containsKey(uuid))
-                                storeData(uuid);
+                            putData(uuid);
                             dataMap.get(uuid).home(p, args[1]);
                             break;
                         }
@@ -177,16 +152,17 @@ public class Main extends JavaPlugin implements Listener {
                     case 6:
                         if (p.hasPermission("dragonflame.home.op")) {
                             OfflinePlayer playerTargeted = Bukkit.getOfflinePlayer(args[0]);
-                            if (!dataJson.has(playerTargeted.getUniqueId().toString())) {
-                                storeData(playerTargeted.getUniqueId());
-                            }
+                            data = fetchData(playerTargeted.getUniqueId());
+
+
+                            dataMap.put(playerTargeted.getUniqueId(), data);
                             Location loca = new Location(
                                     Bukkit.getWorld(args[5]),
                                     Integer.parseInt(args[2]),
                                     Integer.parseInt(args[3]),
                                     Integer.parseInt(args[4])
                             );
-                            dataMap.get(playerTargeted.getUniqueId()).setHome(p, args[1], loca);
+                            data.setHome(p, args[1], loca);
                             break;
                         }
                     default:
@@ -215,11 +191,25 @@ public class Main extends JavaPlugin implements Listener {
                 Bukkit.dispatchCommand(getServer().getConsoleSender(), "scoreboard players set " + p.getName() + " home " + args[0]);
                 return true;
             case "temp":
+                try {
+                    JsonObject jsonObject = new JsonParser().parse(new FileReader("player.json")).getAsJsonObject();
+                    for (Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+                        FileWriter fileWriter = new FileWriter("plugins/data/" + entry.getKey() + ".json");
+                        fileWriter.write(entry.getValue().toString());
+                        fileWriter.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+                return true;
+            case "tempa":
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), getTemp(p.getName(), args));
                 ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
                 Scoreboard scoreboard = scoreboardManager.getMainScoreboard();
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[0]);
-                storeData(offlinePlayer.getUniqueId());
+                putData(offlinePlayer.getUniqueId());
                 for (int i = 1; i <= 3; i++) {
                     Objective ox = scoreboard.getObjective("home" + i + "x");
                     Objective oy = scoreboard.getObjective("home" + i + "y");
@@ -230,32 +220,70 @@ public class Main extends JavaPlugin implements Listener {
                     int iz = oz.getScore(offlinePlayer).getScore();
                     int id = od.getScore(offlinePlayer).getScore();
                     MyPlayerData myPlayerData = dataMap.get(offlinePlayer.getUniqueId());
-                    if(ix == 0 && iy == 0 && iz == 0)
+                    if (ix == 0 && iy == 0 && iz == 0)
                         continue;
                     myPlayerData.setHome(p, "" + i, new Location(worlds[id + 1], ix, iy, iz));
                 }
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "scoreboard players reset " + args[0] + " home1d");
                 return true;
+            case "ttp":
+                if (p.hasPermission("dragonflame.tp")) {
+                    switch (args.length) {
+                        case 1:
+                            target = getPlayer(args[0]);
+                            if (target == null) {
+                                p.sendMessage("Invalid player");
+                                break;
+                            }
+
+                            MyPlayerData.logbackAndTP(p, target.getLocation());
+                            break;
+                        case 2:
+                            target = getPlayer(args[0]);
+
+                            if(target != null)
+                            if("void".equals(args[1])){
+                                getData(target).setBack(null);
+                                target.teleport(target.getLocation().add(0, -5000, 0));
+                            }
+
+
+                            Player target2 = getPlayer(args[1]);
+
+                            if (target == null || target2 == null) {
+                                p.sendMessage("Invalid player");
+                                break;
+                            }
+
+                            MyPlayerData.logbackAndTP(target, target2.getLocation());
+                            break;
+
+                        default:
+                            p.sendMessage(RED + "Too Many or Few Args");
+                            break;
+                    }
+                }
+                return true;
             case "fly":
                 if (p.hasPermission("dragonflame.fly")) {
-                    if (args.length != 1) {
-                        p.setAllowFlight(!p.getAllowFlight());
-                        if (p.getAllowFlight())
-                            p.sendMessage(GOLD + "Flight is Enabled!");
-                        else
-                            p.sendMessage(GOLD + "Flight is Disabled!");
-                    }
-                        else if (p.hasPermission("dragonflame.flyothers")){
-                            Player target = getPlayer(args[0]);
-                            if (Bukkit.getOnlinePlayers().contains(target)) {
+                    if (args.length == 1) {
+                        if (p.hasPermission("dragonflame.flyothers")) {
+                            target = getPlayer(args[0]);
+                            if (target != null) {
                                 target.setAllowFlight(!target.getAllowFlight());
                                 if (target.getAllowFlight())
                                     target.sendMessage(GOLD + "Flight is Enabled!");
                                 else
                                     target.sendMessage(GOLD + "Flight is Disabled!");
-                        }
-                            else
+                            } else
                                 p.sendMessage(RED + "Invalid Player!");
+                        }
+                    } else {
+                        p.setAllowFlight(!p.getAllowFlight());
+                        if (p.getAllowFlight())
+                            p.sendMessage(GOLD + "Flight is Enabled!");
+                        else
+                            p.sendMessage(GOLD + "Flight is Disabled!");
                     }
                 }
                 return true;
@@ -264,8 +292,8 @@ public class Main extends JavaPlugin implements Listener {
                     if (args.length != 1)
                         p.openInventory(p.getEnderChest());
                     else if (p.hasPermission("dragonflame.echestothers")) {
-                        Player target = getPlayer(args[0]);
-                        if (Bukkit.getOnlinePlayers().contains(target))
+                        target = getPlayer(args[0]);
+                        if (target != null)
                             p.openInventory(target.getEnderChest());
                         else
                             p.sendMessage(RED + "Invalid Player!");
@@ -273,7 +301,7 @@ public class Main extends JavaPlugin implements Listener {
                 return true;
             case "repair":
                 if (p.hasPermission("dragonflame.repair"))
-                       p.getInventory().getItemInMainHand().setDurability((short) 0);
+                    p.getInventory().getItemInMainHand().setDurability((short) 0);
                 return true;
             case "feed":
                 if (p.hasPermission("dragonflame.feed")) {
@@ -285,10 +313,10 @@ public class Main extends JavaPlugin implements Listener {
                 if (p.hasPermission("dragonflame.invsee")) {
                     if (args.length != 1)
                         return false;
-                    Player target = getPlayer(args[0]);
-                    if (Bukkit.getOnlinePlayers().contains(target))
+                    target = getPlayer(args[0]);
+                    if (target != null) {
                         p.openInventory(target.getInventory());
-                    else
+                    } else
                         p.sendMessage(RED + "Invalid Player!");
                     return true;
                 }
@@ -304,6 +332,58 @@ public class Main extends JavaPlugin implements Listener {
         }
         return false;
     }
+
+    @Override
+    public void onEnable() {
+        Bukkit.getPluginManager().registerEvents(this, this);
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            UUID uuid = p.getUniqueId();
+            putData(uuid);
+        }
+    }
+
+    private static MyPlayerData fetchData(UUID uuid) {
+        if (dataMap.containsKey(uuid)) {
+            return dataMap.get(uuid);
+        }
+        File file = getFile(uuid);
+        if (file.exists()) {
+            try {
+                FileReader reader = new FileReader(file);
+                JsonObject jsonObject = new JsonParser().parse(reader).getAsJsonObject();
+                reader.close();
+                return MyPlayerData.deserData(jsonObject);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return new MyPlayerData();
+    }
+
+    private static File getFile(UUID uuid) {
+        return new File("plugins/data/" + uuid + ".json");
+    }
+
+    private static void saveData(UUID uuid) {
+        File file = getFile(uuid);
+        try {
+            FileWriter fileWriter = new FileWriter(file);
+            fileWriter.write(MyPlayerData.serData(dataMap.get(uuid)).toString());
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static Player getPlayer(String s) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.getName().equals(s)) {
+                return player;
+            }
+        }
+        return null;
+    }
+
 
     private static final World[] worlds = {Bukkit.getWorld("world_nether"), Bukkit.getWorld("world"), Bukkit.getWorld("world_the_end")};
 
@@ -341,14 +421,6 @@ public class Main extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-        try {
-            FileWriter fileWriter = new FileWriter("player.json");
-            JsonObject json = dataJson;
-            dataMap.forEach((uuid, myPlayerData) -> json.add(uuid.toString(), MyPlayerData.serData(myPlayerData)));
-            fileWriter.write(json.toString());
-            fileWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        dataMap.keySet().forEach(Main::saveData);
     }
 }
