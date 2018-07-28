@@ -1,5 +1,6 @@
 package com.dragonflame.main;
 
+import com.dragonflame.main.machine.machines.CoalGenerator;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -12,6 +13,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
@@ -31,7 +34,31 @@ import static org.bukkit.ChatColor.*;
 
 public class Main extends JavaPlugin implements Listener {
 
+    public static Main main;
+
     static Map<UUID, MyPlayerData> dataMap = new LinkedHashMap<>();
+
+    @EventHandler
+    public void onBreak(BlockBreakEvent e){
+        e.getPlayer().sendMessage("lol");
+    }
+
+    public Main(){
+        main = this;
+    }
+
+
+
+    @EventHandler
+    public void onIgnite(BlockIgniteEvent e){
+        Player p = e.getPlayer();
+        if(p == null)
+            return;
+        p.sendMessage("ignited at " + e.getBlock().getLocation());
+        CoalGenerator generator = new CoalGenerator(e.getBlock().getLocation());
+        generator.create();
+    }
+
 
     @EventHandler
     public void onDeath(PlayerDeathEvent e) {
@@ -421,6 +448,10 @@ public class Main extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-        dataMap.keySet().forEach(Main::saveData);
+        File f = new File("plugins/data");
+        if(f.isDirectory() || f.mkdir())
+            dataMap.keySet().forEach(Main::saveData);
+        else
+            Bukkit.broadcastMessage("something went wrong lmao");
     }
 }
