@@ -39,8 +39,14 @@ class MyPlayerData {
         if (s == null){
             s = "home";
         }
+        int maxHomes = 3;
+        if (p.hasPermission("dragonflame.home.six"))
+            maxHomes = 6;
+        if (p.hasPermission("dragonflame.home.infinite"))
+            maxHomes = Integer.MAX_VALUE;
+
         if (!homes.containsKey(s)) {
-            if(homes.size() < 3){
+            if(homes.size() < maxHomes){
                 homes.put(s, loc);
             } else {
                 p.sendMessage("You have reached your limit of 3 homes");
