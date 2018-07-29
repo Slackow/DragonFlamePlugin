@@ -319,12 +319,13 @@ public class Main extends JavaPlugin implements Listener {
                 return true;
             case "invsee":
                 if (p.hasPermission("dragonflame.invsee")) {
-                    if (args.length != 1)
+                    if (args.length == 0)
                         return false;
                     target = getPlayer(args[0]);
-                    if (target != null) {
-                        p.openInventory(target.getInventory());
-                    } else
+                    if (target != null)
+                        if (args.length == 1)
+                            p.openInventory(target.getInventory());
+                        else
                         p.sendMessage(RED + "Invalid Player!");
                     return true;
                 }
@@ -335,6 +336,19 @@ public class Main extends JavaPlugin implements Listener {
                     p.getInventory().setHelmet(item);
                     p.getInventory().setItemInMainHand(swap);
                     p.sendMessage(GREEN + "Poof!");
+                    return true;
+                }
+            case "nick":
+                if (p.hasPermission("dragonflame.nick")) {
+                    if (args.length == 0) {
+                        p.setDisplayName(p.getName());
+                        p.sendMessage(RED + "Nickname reset!");
+                    }
+                    if (args.length == 1) {
+                        p.setDisplayName(args[0]);
+                        p.setPlayerListName(args[0]);
+                        p.sendMessage(GREEN + "Your nickname is now " + args[0] + "!");
+                    }
                     return true;
                 }
         }
