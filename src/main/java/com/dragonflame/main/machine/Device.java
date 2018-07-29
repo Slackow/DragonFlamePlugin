@@ -2,7 +2,11 @@ package com.dragonflame.main.machine;
 
 import org.bukkit.Location;
 
+import java.util.UUID;
+
 public interface Device {
+
+    UUID getOwner();
 
 
     void tick();

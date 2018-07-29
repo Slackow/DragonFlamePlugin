@@ -4,16 +4,23 @@ import com.dragonflame.main.machine.Generator;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.Dropper;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 
 import java.util.Objects;
+import java.util.UUID;
 
 public class CoalGenerator implements Generator {
     private int energy;
     private ArmorStand armorStand;
     private Location location;
+
+    @Override
+    public UUID getOwner() {
+        return null;
+    }
 
     @SuppressWarnings("deprecation")
     @Override
@@ -26,9 +33,9 @@ public class CoalGenerator implements Generator {
 
     public void create(){
         Objects.requireNonNull(location);
-        Location loc = location.clone();
-        armorStand = (ArmorStand) location.getWorld().spawnEntity(location.add(0.5, 0, 0.5), EntityType.ARMOR_STAND);
-        loc.getBlock().setType(Material.DROPPER);
+        Block block = location.getBlock();
+        block.setType(Material.DROPPER, false);
+        armorStand = (ArmorStand) location.getWorld().spawnEntity(location.add(0.5, 1, 0.5), EntityType.ARMOR_STAND);
         armorStand.setFireTicks(Integer.MAX_VALUE);
         armorStand.setVisible(false);
         armorStand.setGravity(false);
