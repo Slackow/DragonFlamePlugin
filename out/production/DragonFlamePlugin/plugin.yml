@@ -54,9 +54,41 @@ commands:
     usage: /<command>
     description: Temporary command, move these homes over to the old one.
     permission: dragonflame.old
+  fly:
+    usage: /<command>
+    description: Gives the player access to flight.
+    permission: dragonflame.fly
+  echest:
+    usage: /<command>
+    description: Opens player's enderchest.
+    permission: dragonflame.echest
+  repair:
+    usage: /<command>
+    description: Repairs current item in hand.
+    permission: dragonflame.repair
+  feed:
+    usage: /<command>
+    description: Restores all food.
+    permission: dragonflame.feed
+  invsee:
+    usage: /<command> [name]
+    description: Opens a player inventory.
+    permission: dragonflame.invsee
+  hat:
+    usage: /<command>
+    description: Puts item in main hand on head.
+    permission: dragonflame.hat
+  ttp:
+    usage: /<command> <player> [player]
+    description: Tps 2 players and stores to their back
+    permission: dragonflame.tp
+  nick:
+    usage: /<command> <nick>
+    description: Changes your display name!
+    permission: dragonflame.nick
 permissions:
  dragonflame.old:
-  default: true
+  default: op
  dragonflame.book:
   default: true
  dragonflame.spawn:
@@ -67,9 +99,29 @@ permissions:
   default: true
  dragonflame.home:
   default: true
+ dragonflame.tp:
+  default: op
  dragonflame.f:
   default: op
  dragonflame.home.op:
   default: op
  dragonflame.temp:
+  default: op
+ dragonflame.fly:
+  default: op
+ dragonflame.flyothers:
+  default: op
+ dragonflame.echest:
+  default: op
+ dragonflame.echestothers:
+  default: op
+ dragonflame.repair:
+  default: op
+ dragonflame.feed:
+  default: op
+ dragonflame.invsee:
+  default: op
+ dragonflame.hat:
+  default: op
+ dragonflame.nick:
   default: op

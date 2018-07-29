@@ -80,8 +80,12 @@ commands:
     permission: dragonflame.hat
   ttp:
     usage: /<command> <player> [player]
-    description: tps 2 players and stores to their back
+    description: Tps 2 players and stores to their back
     permission: dragonflame.tp
+  nick:
+    usage: /<command> <nick>
+    description: Changes your display name!
+    permission: dragonflame.nick
 permissions:
  dragonflame.old:
   default: op
@@ -118,4 +122,6 @@ permissions:
  dragonflame.invsee:
   default: op
  dragonflame.hat:
+  default: op
+ dragonflame.nick:
   default: op
