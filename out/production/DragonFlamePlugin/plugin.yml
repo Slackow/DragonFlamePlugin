@@ -99,6 +99,10 @@ permissions:
   default: true
  dragonflame.home:
   default: true
+ dragonflame.home.six:
+  default: op
+ dragonflame.home.infinite:
+  default: op
  dragonflame.tp:
   default: op
  dragonflame.f:

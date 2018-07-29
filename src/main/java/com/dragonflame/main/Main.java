@@ -345,9 +345,9 @@ public class Main extends JavaPlugin implements Listener {
                         p.sendMessage(RED + "Nickname reset!");
                     }
                     if (args.length == 1) {
-                        p.setDisplayName(args[0]);
-                        p.setPlayerListName(args[0]);
-                        p.sendMessage(GREEN + "Your nickname is now " + args[0] + "!");
+                            p.setDisplayName(args[0]);
+                            p.setPlayerListName(args[0]);
+                            p.sendMessage(GREEN + "Your nickname is now " + args[0] + "!");
                     }
                     return true;
                 }
